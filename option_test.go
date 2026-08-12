@@ -1,6 +1,7 @@
 package option_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -41,4 +42,28 @@ func TestOption_IsSome(t *testing.T) {
 			assert.Equal(t, tt.want, got, "want: %v, got: %v", tt.want, got)
 		})
 	}
+}
+
+func ExampleOption_IsNone_none() {
+	opt := option.None[int]()
+	fmt.Println(opt.IsNone())
+	// Output: true
+}
+
+func ExampleOption_IsNone_some() {
+	opt := option.Some(2)
+	fmt.Println(opt.IsNone())
+	// Output: false
+}
+
+func ExampleOption_IsSome_none() {
+	opt := option.None[int]()
+	fmt.Println(opt.IsSome())
+	// Output: false
+}
+
+func ExampleOption_IsSome_some() {
+	opt := option.Some(2)
+	fmt.Println(opt.IsSome())
+	// Output: true
 }
