@@ -16,13 +16,3 @@ func None[T any]() Option[T] {
 func Some[T any](value T) Option[T] {
 	return Option[T]{value: value, given: true}
 }
-
-// IsNone reports whether opt contains no value.
-func (opt Option[T]) IsNone() bool {
-	return !opt.given
-}
-
-// IsSome reports whether opt contains a value.
-func (opt Option[T]) IsSome() bool {
-	return opt.given
-}
