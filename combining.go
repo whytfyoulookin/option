@@ -5,11 +5,7 @@ package option
 // b is evaluated before And is called. Use [AndThen] when the second Option
 // should be computed only if a contains a value.
 func And[T, U any](a Option[T], b Option[U]) Option[U] {
-	if a.IsNone() {
-		return None[U]()
-	}
-
-	return b
+	return AndThen(a, func(T) Option[U] { return b })
 }
 
 // Or returns a if it contains a value. Otherwise, it returns b.
@@ -17,11 +13,7 @@ func And[T, U any](a Option[T], b Option[U]) Option[U] {
 // b is evaluated before Or is called. Use [OrElse] when the fallback Option
 // should be computed only if a contains no value.
 func Or[T any](a, b Option[T]) Option[T] {
-	if a.IsSome() {
-		return a
-	}
-
-	return b
+	return OrElse(a, func() Option[T] { return b })
 }
 
 // Xor returns a if only a contains a value, or b if only b contains a value.
@@ -31,11 +23,7 @@ func Xor[T any](a, b Option[T]) Option[T] {
 		return None[T]()
 	}
 
-	if b.IsNone() {
-		return a
-	}
-
-	return b
+	return Or(a, b)
 }
 
 // AndThen returns [None] if opt contains no value. Otherwise, it calls f with
