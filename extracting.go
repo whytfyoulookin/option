@@ -23,8 +23,8 @@ func (opt Option[T]) Unwrap() T {
 // UnwrapOr returns the contained value or a provided default.
 //
 // Arguments passed to UnwrapOr are eagerly evaluated; if you are passing the
-// result of a function call, it is recommended to use UnwrapOrElse, which is
-// lazily evaluated.
+// result of a function call, it is recommended to use [Option.UnwrapOrElse],
+// which is lazily evaluated.
 func (opt Option[T]) UnwrapOr(defaultValue T) T {
 	if opt.IsNone() {
 		return defaultValue

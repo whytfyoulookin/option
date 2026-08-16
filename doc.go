@@ -4,9 +4,8 @@
 // The zero value of [Option] contains no value and is equivalent to [None].
 // Use [Some] to construct an [Option] containing a value.
 //
-// Combining and transforming operations are package-level functions. Some of
-// them, such as [And], [AndThen], [Map], and [Flatten], may change the
-// contained type, and Go methods cannot declare additional type parameters.
-// Operations that could be methods, such as [Or], [Filter], and [Inspect],
-// use the same form to keep these APIs consistent.
+// Operations that work with a single [Option] and do not need extra type
+// parameters are methods. Package-level functions are used when an operation
+// must introduce another type, such as [And], [AndThen], [Map], and
+// [Flatten], or an additional constraint, such as [Compare] and [Equal].
 package option
