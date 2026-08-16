@@ -114,50 +114,42 @@ func TestOption_IsSomeAnd(t *testing.T) {
 	}
 }
 
-func ExampleOption_IsNone_none() {
-	opt := option.None[int]()
-	fmt.Println(opt.IsNone())
-	// Output: true
+func ExampleOption_IsNone() {
+	fmt.Println(option.None[int]().IsNone())
+	fmt.Println(option.Some(2).IsNone())
+
+	// Output:
+	// true
+	// false
 }
 
-func ExampleOption_IsNone_some() {
-	opt := option.Some(2)
-	fmt.Println(opt.IsNone())
-	// Output: false
+func ExampleOption_IsSome() {
+	fmt.Println(option.None[int]().IsSome())
+	fmt.Println(option.Some(2).IsSome())
+
+	// Output:
+	// false
+	// true
 }
 
-func ExampleOption_IsSome_none() {
-	opt := option.None[int]()
-	fmt.Println(opt.IsSome())
-	// Output: false
+func ExampleOption_IsNoneOr() {
+	positive := func(v int) bool { return v > 0 }
+
+	fmt.Println(option.None[int]().IsNoneOr(positive))
+	fmt.Println(option.Some(0).IsNoneOr(positive))
+
+	// Output:
+	// true
+	// false
 }
 
-func ExampleOption_IsSome_some() {
-	opt := option.Some(2)
-	fmt.Println(opt.IsSome())
-	// Output: true
-}
+func ExampleOption_IsSomeAnd() {
+	positive := func(v int) bool { return v > 0 }
 
-func ExampleOption_IsNoneOr_none() {
-	opt := option.None[int]()
-	fmt.Println(opt.IsNoneOr(func(v int) bool { return v > 0 }))
-	// Output: true
-}
+	fmt.Println(option.None[int]().IsSomeAnd(positive))
+	fmt.Println(option.Some(5).IsSomeAnd(positive))
 
-func ExampleOption_IsNoneOr_some() {
-	opt := option.Some(0)
-	fmt.Println(opt.IsNoneOr(func(v int) bool { return v > 0 }))
-	// Output: false
-}
-
-func ExampleOption_IsSomeAnd_none() {
-	opt := option.None[int]()
-	fmt.Println(opt.IsSomeAnd(func(v int) bool { return v > 0 }))
-	// Output: false
-}
-
-func ExampleOption_IsSomeAnd_some() {
-	opt := option.Some(5)
-	fmt.Println(opt.IsSomeAnd(func(v int) bool { return v > 0 }))
-	// Output: true
+	// Output:
+	// false
+	// true
 }

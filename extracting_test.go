@@ -115,68 +115,52 @@ func TestOption_UnwrapOrElse(t *testing.T) {
 	}
 }
 
-func ExampleOption_Expect_none() {
+func ExampleOption_Expect() {
 	defer func() { fmt.Println(recover()) }()
 
-	opt := option.None[string]()
-	opt.Expect("string should not be empty")
-	// Output: string should not be empty
+	fmt.Println(option.Some("value").Expect("fruits are healthy"))
+	option.None[string]().Expect("string should not be empty")
+
+	// Output:
+	// value
+	// string should not be empty
 }
 
-func ExampleOption_Expect_some() {
-	opt := option.Some("value")
-	fmt.Println(opt.Expect("fruits are healthy"))
-	// Output: value
-}
-
-func ExampleOption_Unwrap_none() {
+func ExampleOption_Unwrap() {
 	defer func() { fmt.Println(recover()) }()
 
-	opt := option.None[string]()
-	opt.Unwrap()
-	// Output: option: Unwrap called on None
+	fmt.Println(option.Some("air").Unwrap())
+	option.None[string]().Unwrap()
+
+	// Output:
+	// air
+	// option: Unwrap called on None
 }
 
-func ExampleOption_Unwrap_some() {
-	opt := option.Some("air")
-	fmt.Println(opt.Unwrap())
-	// Output: air
+func ExampleOption_UnwrapOr() {
+	fmt.Println(option.None[string]().UnwrapOr("bike"))
+	fmt.Println(option.Some("car").UnwrapOr("bike"))
+
+	// Output:
+	// bike
+	// car
 }
 
-func ExampleOption_UnwrapOr_none() {
-	opt := option.None[string]()
-	fmt.Println(opt.UnwrapOr("bike"))
-	// Output: bike
+func ExampleOption_UnwrapOrDefault() {
+	fmt.Println(option.None[int]().UnwrapOrDefault())
+	fmt.Println(option.Some(123).UnwrapOrDefault())
+
+	// Output:
+	// 0
+	// 123
 }
 
-func ExampleOption_UnwrapOr_some() {
-	opt := option.Some("car")
-	fmt.Println(opt.UnwrapOr("bike"))
-	// Output: car
-}
-
-func ExampleOption_UnwrapOrDefault_none() {
-	opt := option.None[int]()
-	fmt.Println(opt.UnwrapOrDefault())
-	// Output: 0
-}
-
-func ExampleOption_UnwrapOrDefault_some() {
-	opt := option.Some(123)
-	fmt.Println(opt.UnwrapOrDefault())
-	// Output: 123
-}
-
-func ExampleOption_UnwrapOrElse_none() {
-	opt := option.None[int]()
+func ExampleOption_UnwrapOrElse() {
 	x := 5
-	fmt.Println(opt.UnwrapOrElse(func() int { return 2 * x }))
-	// Output: 10
-}
+	fmt.Println(option.None[int]().UnwrapOrElse(func() int { return 2 * x }))
+	fmt.Println(option.Some(6).UnwrapOrElse(func() int { return 2 * x }))
 
-func ExampleOption_UnwrapOrElse_some() {
-	opt := option.Some(6)
-	x := 5
-	fmt.Println(opt.UnwrapOrElse(func() int { return 2 * x }))
-	// Output: 6
+	// Output:
+	// 10
+	// 6
 }
