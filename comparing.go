@@ -25,7 +25,11 @@ func Compare[T cmp.Ordered](a, b Option[T]) int {
 // Two [None] values are equal. A [None] is not equal to any [Some]. Two [Some]
 // values are equal if their contained values are equal.
 func Equal[T comparable](a, b Option[T]) bool {
-	return a == b
+	if a.IsNone() || b.IsNone() {
+		return a.IsNone() && b.IsNone()
+	}
+
+	return a.value == b.value
 }
 
 // Ge reports whether a is greater than or equal to b.

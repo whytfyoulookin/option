@@ -3,7 +3,12 @@ package option
 // Get returns the contained value and true. If opt contains no value, it
 // returns the zero value of T and false.
 func (opt Option[T]) Get() (T, bool) {
-	return opt.value, opt.given
+	if opt.IsNone() {
+		var zero T
+		return zero, false
+	}
+
+	return opt.value, true
 }
 
 // Ptr returns a pointer to a copy of the contained value. If opt contains no

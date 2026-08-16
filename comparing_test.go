@@ -2,6 +2,7 @@ package option_test
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -51,6 +52,13 @@ func TestEqual(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func TestEqual_NaN(t *testing.T) {
+	nan := option.Some(math.NaN())
+
+	assert.False(t, option.Equal(nan, nan))
+	assert.Equal(t, 0, option.Compare(nan, nan))
 }
 
 func TestGe(t *testing.T) {
