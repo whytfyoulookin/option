@@ -7,6 +7,8 @@ func Flatten[T any](opt Option[Option[T]]) Option[T] {
 
 // Map applies f to the contained value and returns the result as an [Option].
 // If opt contains no value, it returns [None].
+//
+// The function f is not called when opt contains no value.
 func Map[T, U any](opt Option[T], f func(T) U) Option[U] {
 	return AndThen(opt, func(v T) Option[U] { return Some(f(v)) })
 }
@@ -16,12 +18,16 @@ func Map[T, U any](opt Option[T], f func(T) U) Option[U] {
 //
 // defaultValue is evaluated before MapOr is called. Use [MapOrElse] to compute
 // a fallback only when it is needed.
+//
+// The function f is not called when opt contains no value.
 func MapOr[T, U any](opt Option[T], defaultValue U, f func(T) U) U {
 	return Map(opt, f).UnwrapOr(defaultValue)
 }
 
 // MapOrDefault applies f to the contained value and returns the result. If opt
 // contains no value, it returns the zero value of U.
+//
+// The function f is not called when opt contains no value.
 func MapOrDefault[T, U any](opt Option[T], f func(T) U) U {
 	return Map(opt, f).UnwrapOrDefault()
 }
@@ -29,7 +35,8 @@ func MapOrDefault[T, U any](opt Option[T], f func(T) U) U {
 // MapOrElse applies f to the contained value and returns the result. If opt
 // contains no value, it calls defaultF and returns that result.
 //
-// The function defaultF is not called when opt contains a value.
+// The function defaultF is not called when opt contains a value. The function
+// f is not called when opt contains no value.
 func MapOrElse[T, U any](opt Option[T], defaultF func() U, f func(T) U) U {
 	return Map(opt, f).UnwrapOrElse(defaultF)
 }

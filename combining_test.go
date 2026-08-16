@@ -38,86 +38,6 @@ func TestAnd(t *testing.T) {
 	}
 }
 
-func ExampleAndThen() {
-	sqThenToString := func(x uint32) option.Option[string] {
-		if x != 0 && x > math.MaxUint32/x {
-			return option.None[string]()
-		}
-
-		return option.Some(strconv.FormatUint(uint64(x*x), 10))
-	}
-
-	fmt.Println(
-		option.AndThen(option.Some[uint32](2), sqThenToString).UnwrapOr("<none>"),
-	)
-	fmt.Println(
-		option.AndThen(option.Some[uint32](1_000_000), sqThenToString).
-			UnwrapOr("<none>"),
-	)
-	fmt.Println(
-		option.AndThen(option.None[uint32](), sqThenToString).UnwrapOr("<none>"),
-	)
-
-	// Output:
-	// 4
-	// <none>
-	// <none>
-}
-
-func TestOption_Or(t *testing.T) {
-	tests := []struct {
-		name      string
-		a, b      option.Option[int]
-		wantValue int
-		wantNone  bool
-	}{
-		{"some none", option.Some(2), option.None[int](), 2, false},
-		{"none some", option.None[int](), option.Some(67), 67, false},
-		{"some some", option.Some(2), option.Some(67), 2, false},
-		{"none none", option.None[int](), option.None[int](), 0, true},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := tt.a.Or(tt.b)
-
-			if tt.wantNone {
-				assert.True(t, got.IsNone())
-				return
-			}
-
-			assert.Equal(t, tt.wantValue, got.Unwrap())
-		})
-	}
-}
-
-func TestOption_Xor(t *testing.T) {
-	tests := []struct {
-		name      string
-		a, b      option.Option[int]
-		wantValue int
-		wantNone  bool
-	}{
-		{"some none", option.Some(2), option.None[int](), 2, false},
-		{"none some", option.None[int](), option.Some(67), 67, false},
-		{"some some", option.Some(2), option.Some(67), 0, true},
-		{"none none", option.None[int](), option.None[int](), 0, true},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := tt.a.Xor(tt.b)
-
-			if tt.wantNone {
-				assert.True(t, got.IsNone())
-				return
-			}
-
-			assert.Equal(t, tt.wantValue, got.Unwrap())
-		})
-	}
-}
-
 func TestAndThen(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -139,6 +59,33 @@ func TestAndThen(t *testing.T) {
 			})
 
 			assert.Equal(t, tt.wantCalls, calls)
+
+			if tt.wantNone {
+				assert.True(t, got.IsNone())
+				return
+			}
+
+			assert.Equal(t, tt.wantValue, got.Unwrap())
+		})
+	}
+}
+
+func TestOption_Or(t *testing.T) {
+	tests := []struct {
+		name      string
+		a, b      option.Option[int]
+		wantValue int
+		wantNone  bool
+	}{
+		{"some none", option.Some(2), option.None[int](), 2, false},
+		{"none some", option.None[int](), option.Some(67), 67, false},
+		{"some some", option.Some(2), option.Some(67), 2, false},
+		{"none none", option.None[int](), option.None[int](), 0, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.a.Or(tt.b)
 
 			if tt.wantNone {
 				assert.True(t, got.IsNone())
@@ -182,6 +129,33 @@ func TestOption_OrElse(t *testing.T) {
 	}
 }
 
+func TestOption_Xor(t *testing.T) {
+	tests := []struct {
+		name      string
+		a, b      option.Option[int]
+		wantValue int
+		wantNone  bool
+	}{
+		{"some none", option.Some(2), option.None[int](), 2, false},
+		{"none some", option.None[int](), option.Some(67), 67, false},
+		{"some some", option.Some(2), option.Some(67), 0, true},
+		{"none none", option.None[int](), option.None[int](), 0, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.a.Xor(tt.b)
+
+			if tt.wantNone {
+				assert.True(t, got.IsNone())
+				return
+			}
+
+			assert.Equal(t, tt.wantValue, got.Unwrap())
+		})
+	}
+}
+
 func ExampleAnd() {
 	x := option.Some(2)
 	y := option.None[string]()
@@ -203,6 +177,32 @@ func ExampleAnd() {
 	// <none>
 	// <none>
 	// foo
+	// <none>
+}
+
+func ExampleAndThen() {
+	sqThenToString := func(x uint32) option.Option[string] {
+		if x != 0 && x > math.MaxUint32/x {
+			return option.None[string]()
+		}
+
+		return option.Some(strconv.FormatUint(uint64(x*x), 10))
+	}
+
+	fmt.Println(
+		option.AndThen(option.Some[uint32](2), sqThenToString).UnwrapOr("<none>"),
+	)
+	fmt.Println(
+		option.AndThen(option.Some[uint32](1_000_000), sqThenToString).
+			UnwrapOr("<none>"),
+	)
+	fmt.Println(
+		option.AndThen(option.None[uint32](), sqThenToString).UnwrapOr("<none>"),
+	)
+
+	// Output:
+	// 4
+	// <none>
 	// <none>
 }
 
