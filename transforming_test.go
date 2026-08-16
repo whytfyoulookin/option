@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/whytfyoulookin/option"
+	"github.com/wlrgo/option"
 )
 
 func TestFlatten(t *testing.T) {
@@ -151,6 +151,41 @@ func TestMapOrElse(t *testing.T) {
 	}
 }
 
+func TestZipWith(t *testing.T) {
+	tests := []struct {
+		name      string
+		opt       option.Option[int]
+		other     option.Option[string]
+		wantValue int
+		wantNone  bool
+		wantCalls int
+	}{
+		{"some some", option.Some(1), option.Some("hi"), 3, false, 1},
+		{"some none", option.Some(1), option.None[string](), 0, true, 0},
+		{"none some", option.None[int](), option.Some("hi"), 0, true, 0},
+		{"none none", option.None[int](), option.None[string](), 0, true, 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			calls := 0
+			got := option.ZipWith(tt.opt, tt.other, func(n int, s string) int {
+				calls++
+				return n + len(s)
+			})
+
+			assert.Equal(t, tt.wantCalls, calls)
+
+			if tt.wantNone {
+				assert.True(t, got.IsNone())
+				return
+			}
+
+			assert.Equal(t, tt.wantValue, got.Unwrap())
+		})
+	}
+}
+
 func TestOption_Filter(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -202,6 +237,41 @@ func TestOption_Inspect(t *testing.T) {
 			got := tt.give.Inspect(func(v int) {
 				calls++
 				assert.Equal(t, tt.wantValue, v)
+			})
+
+			assert.Equal(t, tt.wantCalls, calls)
+
+			if tt.wantNone {
+				assert.True(t, got.IsNone())
+				return
+			}
+
+			assert.Equal(t, tt.wantValue, got.Unwrap())
+		})
+	}
+}
+
+func TestOption_Reduce(t *testing.T) {
+	tests := []struct {
+		name      string
+		opt       option.Option[int]
+		other     option.Option[int]
+		wantValue int
+		wantNone  bool
+		wantCalls int
+	}{
+		{"some some", option.Some(12), option.Some(17), 29, false, 1},
+		{"some none", option.Some(12), option.None[int](), 12, false, 0},
+		{"none some", option.None[int](), option.Some(17), 17, false, 0},
+		{"none none", option.None[int](), option.None[int](), 0, true, 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			calls := 0
+			got := tt.opt.Reduce(tt.other, func(a, b int) int {
+				calls++
+				return a + b
 			})
 
 			assert.Equal(t, tt.wantCalls, calls)
@@ -294,6 +364,17 @@ func ExampleMapOrElse() {
 	// 42
 }
 
+func ExampleZipWith() {
+	x := option.Some(1)
+	y := option.Some("hi")
+	fmt.Println(option.ZipWith(x, y, func(n int, s string) int { return n + len(s) }).UnwrapOr(-1))
+	fmt.Println(option.ZipWith(x, option.None[string](), func(n int, s string) int { return n + len(s) }).UnwrapOr(-1))
+
+	// Output:
+	// 3
+	// -1
+}
+
 func ExampleOption_Filter() {
 	isEven := func(n int) bool {
 		return n%2 == 0
@@ -319,4 +400,19 @@ func ExampleOption_Inspect() {
 	// Output:
 	// got: 2
 	// 2
+}
+
+func ExampleOption_Reduce() {
+	add := func(a, b int) int { return a + b }
+
+	fmt.Println(option.Some(12).Reduce(option.Some(17), add).UnwrapOr(-1))
+	fmt.Println(option.Some(12).Reduce(option.None[int](), add).UnwrapOr(-1))
+	fmt.Println(option.None[int]().Reduce(option.Some(17), add).UnwrapOr(-1))
+	fmt.Println(option.None[int]().Reduce(option.None[int](), add).UnwrapOr(-1))
+
+	// Output:
+	// 29
+	// 12
+	// 17
+	// -1
 }
