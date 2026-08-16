@@ -8,39 +8,6 @@ import (
 	"github.com/whytfyoulookin/option"
 )
 
-func TestFilter(t *testing.T) {
-	tests := []struct {
-		name      string
-		give      option.Option[int]
-		wantValue int
-		wantNone  bool
-		wantCalls int
-	}{
-		{"none", option.None[int](), 0, true, 0},
-		{"some rejected", option.Some(3), 0, true, 1},
-		{"some kept", option.Some(4), 4, false, 1},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			calls := 0
-			got := option.Filter(tt.give, func(n int) bool {
-				calls++
-				return n%2 == 0
-			})
-
-			assert.Equal(t, tt.wantCalls, calls)
-
-			if tt.wantNone {
-				assert.True(t, got.IsNone())
-				return
-			}
-
-			assert.Equal(t, tt.wantValue, got.Unwrap())
-		})
-	}
-}
-
 func TestFlatten(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -56,38 +23,6 @@ func TestFlatten(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := option.Flatten(tt.give)
-
-			if tt.wantNone {
-				assert.True(t, got.IsNone())
-				return
-			}
-
-			assert.Equal(t, tt.wantValue, got.Unwrap())
-		})
-	}
-}
-
-func TestInspect(t *testing.T) {
-	tests := []struct {
-		name      string
-		give      option.Option[int]
-		wantValue int
-		wantNone  bool
-		wantCalls int
-	}{
-		{"some", option.Some(2), 2, false, 1},
-		{"none", option.None[int](), 0, true, 0},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			calls := 0
-			got := option.Inspect(tt.give, func(v int) {
-				calls++
-				assert.Equal(t, tt.wantValue, v)
-			})
-
-			assert.Equal(t, tt.wantCalls, calls)
 
 			if tt.wantNone {
 				assert.True(t, got.IsNone())
@@ -216,19 +151,69 @@ func TestMapOrElse(t *testing.T) {
 	}
 }
 
-func ExampleFilter() {
-	isEven := func(n int) bool {
-		return n%2 == 0
+func TestOption_Filter(t *testing.T) {
+	tests := []struct {
+		name      string
+		give      option.Option[int]
+		wantValue int
+		wantNone  bool
+		wantCalls int
+	}{
+		{"none", option.None[int](), 0, true, 0},
+		{"some rejected", option.Some(3), 0, true, 1},
+		{"some kept", option.Some(4), 4, false, 1},
 	}
 
-	fmt.Println(option.Filter(option.None[int](), isEven).UnwrapOr(-1))
-	fmt.Println(option.Filter(option.Some(3), isEven).UnwrapOr(-1))
-	fmt.Println(option.Filter(option.Some(4), isEven).UnwrapOr(-1))
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			calls := 0
+			got := tt.give.Filter(func(n int) bool {
+				calls++
+				return n%2 == 0
+			})
 
-	// Output:
-	// -1
-	// -1
-	// 4
+			assert.Equal(t, tt.wantCalls, calls)
+
+			if tt.wantNone {
+				assert.True(t, got.IsNone())
+				return
+			}
+
+			assert.Equal(t, tt.wantValue, got.Unwrap())
+		})
+	}
+}
+
+func TestOption_Inspect(t *testing.T) {
+	tests := []struct {
+		name      string
+		give      option.Option[int]
+		wantValue int
+		wantNone  bool
+		wantCalls int
+	}{
+		{"some", option.Some(2), 2, false, 1},
+		{"none", option.None[int](), 0, true, 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			calls := 0
+			got := tt.give.Inspect(func(v int) {
+				calls++
+				assert.Equal(t, tt.wantValue, v)
+			})
+
+			assert.Equal(t, tt.wantCalls, calls)
+
+			if tt.wantNone {
+				assert.True(t, got.IsNone())
+				return
+			}
+
+			assert.Equal(t, tt.wantValue, got.Unwrap())
+		})
+	}
 }
 
 func ExampleFlatten() {
@@ -245,22 +230,6 @@ func ExampleFlatten() {
 	// 6
 	// -1
 	// -1
-}
-
-func ExampleInspect() {
-	x := option.Inspect(option.Some(2), func(v int) {
-		fmt.Println("got:", v)
-	})
-
-	fmt.Println(x.Unwrap())
-
-	option.Inspect(option.None[int](), func(v int) {
-		fmt.Println("got:", v)
-	})
-
-	// Output:
-	// got: 2
-	// 2
 }
 
 func ExampleMap() {
@@ -323,4 +292,31 @@ func ExampleMapOrElse() {
 	// Output:
 	// 3
 	// 42
+}
+
+func ExampleOption_Filter() {
+	isEven := func(n int) bool {
+		return n%2 == 0
+	}
+
+	fmt.Println(option.None[int]().Filter(isEven).UnwrapOr(-1))
+	fmt.Println(option.Some(3).Filter(isEven).UnwrapOr(-1))
+	fmt.Println(option.Some(4).Filter(isEven).UnwrapOr(-1))
+
+	// Output:
+	// -1
+	// -1
+	// 4
+}
+
+func ExampleOption_Inspect() {
+	x := option.Some(2).Inspect(func(v int) { fmt.Println("got:", v) })
+
+	fmt.Println(x.Unwrap())
+
+	option.None[int]().Inspect(func(v int) { fmt.Println("got:", v) })
+
+	// Output:
+	// got: 2
+	// 2
 }

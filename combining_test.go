@@ -38,7 +38,33 @@ func TestAnd(t *testing.T) {
 	}
 }
 
-func TestOr(t *testing.T) {
+func ExampleAndThen() {
+	sqThenToString := func(x uint32) option.Option[string] {
+		if x != 0 && x > math.MaxUint32/x {
+			return option.None[string]()
+		}
+
+		return option.Some(strconv.FormatUint(uint64(x*x), 10))
+	}
+
+	fmt.Println(
+		option.AndThen(option.Some[uint32](2), sqThenToString).UnwrapOr("<none>"),
+	)
+	fmt.Println(
+		option.AndThen(option.Some[uint32](1_000_000), sqThenToString).
+			UnwrapOr("<none>"),
+	)
+	fmt.Println(
+		option.AndThen(option.None[uint32](), sqThenToString).UnwrapOr("<none>"),
+	)
+
+	// Output:
+	// 4
+	// <none>
+	// <none>
+}
+
+func TestOption_Or(t *testing.T) {
 	tests := []struct {
 		name      string
 		a, b      option.Option[int]
@@ -53,7 +79,7 @@ func TestOr(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := option.Or(tt.a, tt.b)
+			got := tt.a.Or(tt.b)
 
 			if tt.wantNone {
 				assert.True(t, got.IsNone())
@@ -65,7 +91,7 @@ func TestOr(t *testing.T) {
 	}
 }
 
-func TestXor(t *testing.T) {
+func TestOption_Xor(t *testing.T) {
 	tests := []struct {
 		name      string
 		a, b      option.Option[int]
@@ -80,7 +106,7 @@ func TestXor(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := option.Xor(tt.a, tt.b)
+			got := tt.a.Xor(tt.b)
 
 			if tt.wantNone {
 				assert.True(t, got.IsNone())
@@ -124,7 +150,7 @@ func TestAndThen(t *testing.T) {
 	}
 }
 
-func TestOrElse(t *testing.T) {
+func TestOption_OrElse(t *testing.T) {
 	tests := []struct {
 		name      string
 		give      option.Option[int]
@@ -139,7 +165,7 @@ func TestOrElse(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			calls := 0
-			got := option.OrElse(tt.give, func() option.Option[int] {
+			got := tt.give.OrElse(func() option.Option[int] {
 				calls++
 				return option.Some(67)
 			})
@@ -180,22 +206,22 @@ func ExampleAnd() {
 	// <none>
 }
 
-func ExampleOr() {
+func ExampleOption_Or() {
 	x := option.Some(2)
 	y := option.None[int]()
-	fmt.Println(option.Or(x, y).UnwrapOr(-1))
+	fmt.Println(x.Or(y).UnwrapOr(-1))
 
 	x = option.None[int]()
 	y = option.Some(100)
-	fmt.Println(option.Or(x, y).UnwrapOr(-1))
+	fmt.Println(x.Or(y).UnwrapOr(-1))
 
 	x = option.Some(2)
 	y = option.Some(100)
-	fmt.Println(option.Or(x, y).UnwrapOr(-1))
+	fmt.Println(x.Or(y).UnwrapOr(-1))
 
 	x = option.None[int]()
 	y = option.None[int]()
-	fmt.Println(option.Or(x, y).UnwrapOr(-1))
+	fmt.Println(x.Or(y).UnwrapOr(-1))
 
 	// Output:
 	// 2
@@ -204,74 +230,40 @@ func ExampleOr() {
 	// -1
 }
 
-func ExampleXor() {
-	x := option.Some(2)
-	y := option.None[int]()
-	fmt.Println(option.Xor(x, y).UnwrapOr(-1))
-
-	x = option.None[int]()
-	y = option.Some(2)
-	fmt.Println(option.Xor(x, y).UnwrapOr(-1))
-
-	x = option.Some(2)
-	y = option.Some(22)
-	fmt.Println(option.Xor(x, y).UnwrapOr(-1))
-
-	x = option.None[int]()
-	y = option.None[int]()
-	fmt.Println(option.Xor(x, y).UnwrapOr(-1))
-
-	// Output:
-	// 2
-	// 2
-	// -1
-	// -1
-}
-
-func ExampleAndThen() {
-	sqThenToString := func(x uint32) option.Option[string] {
-		if x != 0 && x > math.MaxUint32/x {
-			return option.None[string]()
-		}
-
-		return option.Some(strconv.FormatUint(uint64(x*x), 10))
-	}
-
-	fmt.Println(
-		option.AndThen(option.Some[uint32](2), sqThenToString).UnwrapOr("<none>"),
-	)
-
-	fmt.Println(
-		option.AndThen(option.Some[uint32](1_000_000), sqThenToString).
-			UnwrapOr("<none>"),
-	)
-
-	fmt.Println(
-		option.AndThen(option.None[uint32](), sqThenToString).UnwrapOr("<none>"),
-	)
-
-	// Output:
-	// 4
-	// <none>
-	// <none>
-}
-
-func ExampleOrElse() {
+func ExampleOption_OrElse() {
 	nobody := func() option.Option[string] { return option.None[string]() }
 	vikings := func() option.Option[string] { return option.Some("vikings") }
 
-	fmt.Println(
-		option.OrElse(option.Some("barbarians"), vikings).UnwrapOr("<none>"),
-	)
-
-	fmt.Println(
-		option.OrElse(option.None[string](), vikings).UnwrapOr("<none>"),
-	)
-
-	fmt.Println(option.OrElse(option.None[string](), nobody).UnwrapOr("<none>"))
+	fmt.Println(option.Some("barbarians").OrElse(vikings).UnwrapOr("<none>"))
+	fmt.Println(option.None[string]().OrElse(vikings).UnwrapOr("<none>"))
+	fmt.Println(option.None[string]().OrElse(nobody).UnwrapOr("<none>"))
 
 	// Output:
 	// barbarians
 	// vikings
 	// <none>
+}
+
+func ExampleOption_Xor() {
+	x := option.Some(2)
+	y := option.None[int]()
+	fmt.Println(x.Xor(y).UnwrapOr(-1))
+
+	x = option.None[int]()
+	y = option.Some(2)
+	fmt.Println(x.Xor(y).UnwrapOr(-1))
+
+	x = option.Some(2)
+	y = option.Some(22)
+	fmt.Println(x.Xor(y).UnwrapOr(-1))
+
+	x = option.None[int]()
+	y = option.None[int]()
+	fmt.Println(x.Xor(y).UnwrapOr(-1))
+
+	// Output:
+	// 2
+	// 2
+	// -1
+	// -1
 }
