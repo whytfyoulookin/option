@@ -30,7 +30,7 @@ func None[T any]() Option[T] {
 	return Option[T]{given: false}
 }
 
-// Some returns an [Option] containing value.
+// Some returns an [Option] containing the value.
 func Some[T any](value T) Option[T] {
 	return Option[T]{value: value, given: true}
 }

@@ -5,6 +5,13 @@ package option
 //
 // If opt already contains a value, the old value is overwritten.
 //
+// The returned pointer aliases opt's storage. It is valid until the next
+// [Option.Take] or [Option.Replace] on opt. Use [Option.Ptr] for a pointer to
+// a copy that does not alias opt.
+//
+// Insert must be called on an addressable [Option]. Map elements cannot take
+// pointer methods in place.
+//
 // See also [Option.GetOrInsert], which does not overwrite a contained value.
 func (opt *Option[T]) Insert(value T) *T {
 	opt.value = value
@@ -14,6 +21,8 @@ func (opt *Option[T]) Insert(value T) *T {
 
 // GetOrInsert inserts value into opt if opt contains no value, then returns a
 // pointer to the contained value.
+//
+// The returned pointer aliases opt's storage. See [Option.Insert].
 //
 // value is evaluated before GetOrInsert is called. Use [Option.GetOrInsertWith]
 // to compute a fallback only when it is needed.
@@ -26,12 +35,16 @@ func (opt *Option[T]) GetOrInsert(value T) *T {
 
 // GetOrInsertDefault inserts the zero value of T into opt if opt contains no
 // value, then returns a pointer to the contained value.
+//
+// The returned pointer aliases opt's storage. See [Option.Insert].
 func (opt *Option[T]) GetOrInsertDefault() *T {
 	return opt.GetOrInsertWith(func() T { var t T; return t })
 }
 
 // GetOrInsertWith inserts a value computed from f into opt if opt contains no
 // value, then returns a pointer to the contained value.
+//
+// The returned pointer aliases opt's storage. See [Option.Insert].
 //
 // The function f is not called when opt contains a value.
 func (opt *Option[T]) GetOrInsertWith(f func() T) *T {
@@ -55,6 +68,9 @@ func (opt *Option[T]) Take() Option[T] {
 //
 // If opt contains a value and p returns true, TakeIf is equivalent to
 // [Option.Take]. Otherwise, it leaves opt unchanged and returns [None].
+//
+// p receives a copy of the contained value and cannot mutate opt, even when
+// it returns false.
 //
 // The function p is not called when opt contains no value.
 func (opt *Option[T]) TakeIf(p func(T) bool) Option[T] {
