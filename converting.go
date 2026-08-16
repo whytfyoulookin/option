@@ -25,6 +25,10 @@ func (opt Option[T]) Ptr() *T {
 // OkOr returns the contained value and a nil error. If opt contains no value,
 // it returns the zero value of T and err.
 //
+// err should be non-nil when used as a fallback. A nil err on the [None] path
+// returns the zero value of T and a nil error, which is indistinguishable from
+// [Some] of the zero value.
+//
 // err is evaluated before OkOr is called. Use [Option.OkOrElse] to compute an
 // error only when it is needed.
 func (opt Option[T]) OkOr(err error) (T, error) {
@@ -33,6 +37,8 @@ func (opt Option[T]) OkOr(err error) (T, error) {
 
 // OkOrElse returns the contained value and a nil error. If opt contains no
 // value, it calls errF and returns the zero value of T and that error.
+//
+// The error returned by errF should be non-nil. See [Option.OkOr].
 //
 // The function errF is not called when opt contains a value.
 func (opt Option[T]) OkOrElse(errF func() error) (T, error) {

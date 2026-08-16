@@ -7,6 +7,9 @@ import "cmp"
 //
 // [None] is less than any [Some] value. Two [None] values are equal. If both
 // contain values, they are compared with [cmp.Compare].
+//
+// For floating-point values, [cmp.Compare] treats NaN as equal to NaN. [Equal]
+// uses Go ==, so two [Some] NaN values compare equal here and unequal there.
 func Compare[T cmp.Ordered](a, b Option[T]) int {
 	switch {
 	case a.IsNone() && b.IsNone():
@@ -23,7 +26,10 @@ func Compare[T cmp.Ordered](a, b Option[T]) int {
 // Equal reports whether a and b are equal.
 //
 // Two [None] values are equal. A [None] is not equal to any [Some]. Two [Some]
-// values are equal if their contained values are equal.
+// values are equal if their contained values are equal with Go ==.
+//
+// For floating-point values, two [Some] NaN values are not equal. [Compare]
+// uses [cmp.Compare], so those same values compare equal there.
 func Equal[T comparable](a, b Option[T]) bool {
 	if a.IsNone() || b.IsNone() {
 		return a.IsNone() && b.IsNone()

@@ -54,7 +54,7 @@ func TestOption_IsNoneOr(t *testing.T) {
 		{
 			name: "none",
 			give: option.None[int](),
-			pred: nil, // не вызывается
+			pred: nil,
 			want: true,
 		},
 		{
@@ -89,7 +89,7 @@ func TestOption_IsSomeAnd(t *testing.T) {
 		{
 			name: "none",
 			give: option.None[int](),
-			pred: func(v int) bool { return true }, // не вызывается
+			pred: nil,
 			want: false,
 		},
 		{
