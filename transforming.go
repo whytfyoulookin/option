@@ -41,6 +41,18 @@ func MapOrElse[T, U any](opt Option[T], defaultF func() U, f func(T) U) U {
 	return Map(opt, f).UnwrapOrElse(defaultF)
 }
 
+// ZipWith applies f to the contained values of opt and other and returns
+// the result as an [Option]. If either contains no value, it returns [None].
+//
+// The function f is not called unless both contain a value.
+func ZipWith[T, U, V any](
+	opt Option[T], other Option[U], f func(T, U) V,
+) Option[V] {
+	return AndThen(opt, func(t T) Option[V] {
+		return Map(other, func(u U) V { return f(t, u) })
+	})
+}
+
 // Filter returns opt if it contains a value that satisfies f. Otherwise, it
 // returns [None].
 //
@@ -65,4 +77,16 @@ func (opt Option[T]) Inspect(f func(T)) Option[T] {
 	}
 
 	return opt
+}
+
+// Reduce combines opt and other with f if both contain a value. If only one
+// contains a value, that [Option] is returned. If neither contains a value,
+// it returns [None].
+//
+// The function f is not called unless both contain a value.
+//
+// Unlike [ZipWith], a single contained value is kept instead of returning
+// [None].
+func (opt Option[T]) Reduce(other Option[T], f func(T, T) T) Option[T] {
+	return ZipWith(opt, other, f).Or(opt).Or(other)
 }

@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/whytfyoulookin/option"
+	"github.com/wlrgo/option"
 )
 
 func TestAnd(t *testing.T) {

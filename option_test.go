@@ -3,7 +3,7 @@ package option_test
 import (
 	"fmt"
 
-	"github.com/whytfyoulookin/option"
+	"github.com/wlrgo/option"
 )
 
 func ExampleOption() {
