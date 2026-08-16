@@ -1,4 +1,4 @@
-module github.com/whytfyoulookin/option
+module github.com/wlrgo/option
 
 go 1.26.5
 
