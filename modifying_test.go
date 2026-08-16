@@ -140,6 +140,18 @@ func TestOption_Take(t *testing.T) {
 	}
 }
 
+func TestOption_Take_leftoverPointer(t *testing.T) {
+	opt := option.None[int]()
+	p := opt.Insert(7)
+	opt.Take()
+	*p = 99
+
+	got, ok := opt.Get()
+	assert.Equal(t, 0, got)
+	assert.False(t, ok)
+	assert.True(t, option.Equal(opt, option.None[int]()))
+}
+
 func TestOption_TakeIf(t *testing.T) {
 	tests := []struct {
 		name      string

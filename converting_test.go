@@ -64,6 +64,12 @@ func TestOption_OkOr(t *testing.T) {
 			assert.Equal(t, tt.wantErr, err)
 		})
 	}
+
+	t.Run("nil error", func(t *testing.T) {
+		got, err := option.None[int]().OkOr(nil)
+		assert.Equal(t, 0, got)
+		assert.NoError(t, err)
+	})
 }
 
 func TestOption_OkOrElse(t *testing.T) {
